@@ -1,36 +1,20 @@
 package org.meowengine.graphics;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonStreamParser;
-import de.matthiasmann.twl.utils.PNGDecoder;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.joml.Vector2i;
 import org.joml.Vector4i;
-import org.meowengine.Disposer;
-import org.meowengine.content.Asset;
-import org.meowengine.content.ContentManager;
-import org.lwjgl.system.MemoryUtil;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
+import org.meowengine.content.Resource;
 
 @Slf4j
-public class Texture extends Asset {
+//FIXME
+public class Texture extends Resource {
 
-    private final int openglId;
+    //private final int openglId;
 
-    private final int frameCount;
-    private final Vector2i textureSize;
-    private final List<Frame> frameList;
+    //private final int frameCount;
+    //private final Vector2i textureSize;
+    //private final List<Frame> frameList;
 
     @Data
     @AllArgsConstructor
@@ -42,6 +26,7 @@ public class Texture extends Asset {
     }
 
 
+    /*
     public Texture(ContentManager contentManager, String location) {
         super(contentManager, location);
 
@@ -109,12 +94,13 @@ public class Texture extends Asset {
             log.error(exception.getMessage());
             throw new RuntimeException("Failed to load Texture");
         }
-        */
+
 
     }
+    */
 
 
-    public int getId() { return openglId; }
+    //public int getId() { return openglId; }
 
 
 }
