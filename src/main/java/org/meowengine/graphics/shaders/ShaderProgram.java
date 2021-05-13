@@ -35,6 +35,14 @@ public class ShaderProgram {
         return id;
     }
 
+    protected final void use() {
+        glUseProgram(id);
+    }
+
+    protected final void unuse() {
+        glUseProgram(0);
+    }
+
     protected final void injectUniform(String uniformName, int value) {
         glUniform1i(glGetUniformLocation(id, uniformName), value);
     }
@@ -134,11 +142,5 @@ public class ShaderProgram {
         MemoryUtil.memFree(fb);
     }
 
-    protected final void use() {
-        glUseProgram(id);
-    }
 
-    protected final void unuse() {
-        glUseProgram(0);
-    }
 }

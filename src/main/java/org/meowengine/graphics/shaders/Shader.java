@@ -1,19 +1,28 @@
 package org.meowengine.graphics.shaders;
 
 import lombok.extern.slf4j.Slf4j;
-import org.meowengine.Disposer;
-import org.meowengine.content.Asset;
-import org.meowengine.content.ContentManager;
+import org.meowengine.content.Resource;
 
-import java.util.Scanner;
-
-import static org.lwjgl.opengl.GL33C.*;
+import java.io.File;
 
 @Slf4j
-public class Shader extends Asset {
+public class Shader extends Resource {
 
-    private final int id;
 
+    public Shader(File file) {
+        super(file);
+
+    }
+
+    public Shader(String file, ClassLoader classLoader) {
+        super(file, classLoader);
+
+
+    }
+
+    //FIXME
+    //private final int id;
+    /*
     public Shader(ContentManager contentManager, String location, ShaderType shaderType) {
         super(contentManager, location);
         String source;
@@ -39,10 +48,11 @@ public class Shader extends Asset {
         } else {
             log.debug("Successful shader compiling [id = {}]", id);
         }
-    }
+    }*/
 
     final int getId() {
-        return id;
+        //return id;
+        return 0;
     }
 
 

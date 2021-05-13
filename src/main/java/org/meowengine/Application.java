@@ -1,46 +1,37 @@
 package org.meowengine;
 
 import lombok.extern.slf4j.Slf4j;
+import org.lwjgl.Version;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Callback;
+import org.lwjgl.system.MemoryStack;
+import org.meowengine.graphics.Node;
 
-import org.lwjgl.*;
-import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.*;
-import org.lwjgl.system.*;
+import java.nio.IntBuffer;
 
-
-import java.nio.*;
-
-import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL33.*;
-import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL14.GL_MIRRORED_REPEAT;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
-
-/**
- * Hello world!
- *
- */
 @Slf4j
-@Renderer
-@ApplicationType(renderer = RendererType.GL)
-public abstract class GLApplication extends LegacyApplication {
+public abstract class Application {
+    protected final Node rootNode;
+    protected long window;
+    protected Camera camera;
+    protected Callback debugProc;
 
-
-    public GLApplication() {
-        super();
+    protected Application() {
+        this.rootNode = new Node();
     }
 
-
-
-
-    /**
-     * This function allow you to run your game.
-     */
-    @Override
     public final void Run() {
         log.info("Hello LWJGL " + Version.getVersion());
-
-        contentManager.addSource(GLApplication.class.getClassLoader());
 
         init();
         loop();
@@ -67,7 +58,6 @@ public abstract class GLApplication extends LegacyApplication {
         log.info("Exciting...");
     }
 
-    @Override
     protected void init() {
         GLFWErrorCallback.createPrint(System.out).set();
         if (!glfwInit()) {
@@ -139,7 +129,6 @@ public abstract class GLApplication extends LegacyApplication {
         }
     }
 
-    @Override
     protected void loop() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glEnable(GL_DEPTH_TEST);
@@ -159,15 +148,10 @@ public abstract class GLApplication extends LegacyApplication {
 
     }
 
-    @Override
     protected void draw(long spendTime) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-
-
-
-    @Override
     protected void update(long spendTime) {
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -178,12 +162,44 @@ public abstract class GLApplication extends LegacyApplication {
         }
     }
 
-    @Override
+
+    /**
+     * This function is automatically called when application starts.
+     */
+    public abstract void SimpleInit();
+
+    /**
+     * This function is a part of game loop.
+     * Here you can draw anything you want.
+     *
+     * @param spendTime Time that consumed from start of loop (ms)
+     */
+    public abstract void SimpleDraw(long spendTime);
+
+    /**
+     * This function is a part of game loop.
+     * Here you can update your physics or input.
+     *
+     * @param spendTime Time that consumed from start of loop (ms)
+     */
+    public abstract void SimpleUpdate(long spendTime);
+
+    protected abstract void OnWindowResize(int new_width, int new_height);
+
+    protected abstract void OnFramebufferResize(int new_width, int new_height);
+
+
+    /**
+     * This function called when user tried to close window
+     *
+     * @return if return value is true window starts exit loop.
+     */
+    protected abstract boolean OnWindowCloseSignal();
+
     protected void CallbackWindowResize(long window, int width, int height) {
         OnWindowResize(width, height);
     }
 
-    @Override
     protected void CallbackWindowCloseSignal(long window) {
         glfwSetWindowShouldClose(window, false);
         if (OnWindowCloseSignal()) {
