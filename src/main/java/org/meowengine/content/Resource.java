@@ -4,11 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.lwjgl.system.CallbackI;
 import org.meowengine.exceptions.ResourceNotFound;
 
+import java.io.Closeable;
 import java.io.File;
 import java.util.Optional;
 
 @Slf4j
-public abstract class Resource {
+public abstract class Resource implements Closeable {
 
     /**
      * Loads resource as static resource from local directory
@@ -44,4 +45,6 @@ public abstract class Resource {
             throw new ResourceNotFound(file, classLoader);
         }
     }
+
+    
 }

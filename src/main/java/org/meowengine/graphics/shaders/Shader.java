@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.meowengine.content.Resource;
 
 import java.io.File;
+import java.io.IOException;
 
 @Slf4j
 public class Shader extends Resource {
@@ -56,4 +57,8 @@ public class Shader extends Resource {
     }
 
 
+    @Override
+    public void close() {
+
+    }
 }
