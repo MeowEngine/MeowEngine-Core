@@ -1,19 +1,29 @@
 package org.meowengine;
 
+import lombok.extern.slf4j.Slf4j;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFW;
 
+@Slf4j
 public class Window {
 
-    long windowId;
+    private long windowId;
     private WindowSize windowSize;
+
+    // TODO Connect windowSize with callback in Application
 
     private Window() { }
 
-    public Window createGLFWWindow() {
+    public static Window createGLFWWindow(ApplicationSettings settings) {
         Window window = new Window();
-        //TODO window.windowId = GLFW.glfwCreateWindow();
-
+        window.windowId = GLFW.glfwCreateWindow(settings.getWindowWidth(),
+                settings.windowHeight,
+                settings.windowName,
+                0, 0);
+        if (window.windowId == 0) {
+            log.error("Failed to initialize GLFW Window");
+            throw new RuntimeException("Failed to create window");
+        }
         return window;
     }
 

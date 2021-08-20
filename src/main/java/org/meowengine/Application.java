@@ -1,5 +1,6 @@
 package org.meowengine;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -8,11 +9,11 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.MemoryStack;
-import org.meowengine.di.ComponentScanner;
 import org.meowengine.graphics.Node;
 import org.meowengine.graphics.gui.GuiDrawer;
 
 import java.nio.IntBuffer;
+import java.util.Map;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -22,27 +23,30 @@ import static org.lwjgl.opengl.GL14.GL_MIRRORED_REPEAT;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 @Slf4j
-public abstract class ApplicationContext {
+public abstract class Application {
     protected final Node rootNode;
-//  TODO  protected Window window;
-    protected long window;
+    protected Window window;
+//    protected long window;
     protected Camera camera;
     protected GuiDrawer gui;
     protected Callback debugProc;
 
+    protected ApplicationSettings applicationSettings;
 
-
-    protected ApplicationContext() {
-        this.rootNode = new Node();
+    protected Application() {
+        rootNode = new Node();
+        applicationSettings = ApplicationSettings.getDefault();
     }
 
+    protected Application(ApplicationSettings appSettings) {
+        rootNode = new Node();
+        applicationSettings = appSettings;
+    }
 
-
+    @SneakyThrows
     public final void Run() {
         log.info("Hello LWJGL " + Version.getVersion());
-
-        log.trace("Performing component scan and beans creation");
-        ComponentScanner.performScan("org.meowengine");
+        Class.forName("org.meowengine.EngineProperties");
 
         init();
         loop();
@@ -53,8 +57,8 @@ public abstract class ApplicationContext {
             debugProc.free();
         }
 
-        glfwFreeCallbacks(window);
-        glfwDestroyWindow(window);
+        glfwFreeCallbacks(window.getWindowId());
+        glfwDestroyWindow(window.getWindowId());
         glfwTerminate();
 
         try {
@@ -85,9 +89,8 @@ public abstract class ApplicationContext {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-        window = glfwCreateWindow(1280, 720, "opensb", 0, 0);
-        if (window == 0)
-            throw new RuntimeException("Failed to create window");
+        window = Window.createGLFWWindow(applicationSettings);
+
 
         log.info("Successfully created new window");
 
@@ -96,7 +99,7 @@ public abstract class ApplicationContext {
             IntBuffer pHeight = stack.mallocInt(1); // int*
 
             // Get the window size passed to glfwCreateWindow
-            glfwGetWindowSize(window, pWidth, pHeight);
+            glfwGetWindowSize(window.getWindowId(), pWidth, pHeight);
 
             // Get the resolution of the primary monitor
             GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -104,20 +107,20 @@ public abstract class ApplicationContext {
             // Center the window
             assert vidmode != null;
             glfwSetWindowPos(
-                    window,
+                    window.getWindowId(),
                     (vidmode.width() - pWidth.get(0)) / 2,
                     (vidmode.height() - pHeight.get(0)) / 2
             );
         }
 
 
-        glfwMakeContextCurrent(window);
-        glfwSetWindowSizeCallback(window, this::CallbackWindowResize);
-        glfwSetWindowCloseCallback(window, this::CallbackWindowCloseSignal);
+        glfwMakeContextCurrent(window.getWindowId());
+        glfwSetWindowSizeCallback(window.getWindowId(), this::CallbackWindowResize);
+        glfwSetWindowCloseCallback(window.getWindowId(), this::CallbackWindowCloseSignal);
 
         glfwSwapInterval(1);
 
-        glfwShowWindow(window);
+        glfwShowWindow(window.getWindowId());
         GL.createCapabilities();
         glViewport(0, 0, 1280, 720);
 
@@ -145,7 +148,7 @@ public abstract class ApplicationContext {
         glEnable(GL_DEPTH_TEST);
         long time = System.nanoTime();
 
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window.getWindowId())) {
 
             update(System.nanoTime() - time);
             SimpleUpdate(System.nanoTime() - time);
@@ -164,7 +167,7 @@ public abstract class ApplicationContext {
     }
 
     protected void update(long spendTime) {
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window.getWindowId());
         glfwPollEvents();
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         int error = glGetError();
@@ -197,8 +200,6 @@ public abstract class ApplicationContext {
 
     protected abstract void OnWindowResize(int new_width, int new_height);
 
-    protected abstract void OnFramebufferResize(int new_width, int new_height);
-
 
     /**
      * This function called when user tried to close window
@@ -217,4 +218,6 @@ public abstract class ApplicationContext {
             glfwSetWindowShouldClose(window, true);
         }
     }
+
+
 }
