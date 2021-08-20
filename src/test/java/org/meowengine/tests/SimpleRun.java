@@ -1,9 +1,9 @@
 package org.meowengine.tests;
 
 import org.junit.Test;
-import org.meowengine.Application;
+import org.meowengine.ApplicationContext;
 
-public class SimpleRun extends Application {
+public class SimpleRun extends ApplicationContext {
 
     @Test
     public void simpleRun() {

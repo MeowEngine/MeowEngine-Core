@@ -8,7 +8,9 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.MemoryStack;
+import org.meowengine.di.ComponentScanner;
 import org.meowengine.graphics.Node;
+import org.meowengine.graphics.gui.GuiDrawer;
 
 import java.nio.IntBuffer;
 
@@ -20,18 +22,27 @@ import static org.lwjgl.opengl.GL14.GL_MIRRORED_REPEAT;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
 @Slf4j
-public abstract class Application {
+public abstract class ApplicationContext {
     protected final Node rootNode;
+//  TODO  protected Window window;
     protected long window;
     protected Camera camera;
+    protected GuiDrawer gui;
     protected Callback debugProc;
 
-    protected Application() {
+
+
+    protected ApplicationContext() {
         this.rootNode = new Node();
     }
 
+
+
     public final void Run() {
         log.info("Hello LWJGL " + Version.getVersion());
+
+        log.trace("Performing component scan and beans creation");
+        ComponentScanner.performScan("org.meowengine");
 
         init();
         loop();
