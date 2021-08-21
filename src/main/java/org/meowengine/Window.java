@@ -10,8 +10,6 @@ public class Window {
     private long windowId;
     private WindowSize windowSize;
 
-    // TODO Connect windowSize with callback in Application
-
     private Window() { }
 
     public static Window createGLFWWindow(ApplicationSettings settings) {
@@ -33,6 +31,10 @@ public class Window {
 
     long getWindowId() {
         return windowId;
+    }
+
+    void updateWindowSize(int width, int height) {
+        windowSize.updateWindowSize(width, height);
     }
 
     public class WindowSize {

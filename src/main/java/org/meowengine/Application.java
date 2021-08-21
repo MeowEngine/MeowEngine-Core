@@ -26,7 +26,6 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 public abstract class Application {
     protected final Node rootNode;
     protected Window window;
-//    protected long window;
     protected Camera camera;
     protected GuiDrawer gui;
     protected Callback debugProc;
@@ -62,6 +61,7 @@ public abstract class Application {
         glfwTerminate();
 
         try {
+            //noinspection ConstantConditions
             glfwSetErrorCallback(null).free();
         } catch (NullPointerException exception) {
             log.info("Maybe not set glfwErrorCallback");
@@ -208,7 +208,9 @@ public abstract class Application {
      */
     protected abstract boolean OnWindowCloseSignal();
 
+    // Notice first param, it's long. GLFW return here not only one window resize
     protected void CallbackWindowResize(long window, int width, int height) {
+        this.window.updateWindowSize(width, height);
         OnWindowResize(width, height);
     }
 
