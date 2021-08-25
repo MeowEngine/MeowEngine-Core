@@ -2,6 +2,7 @@ package org.meowengine.graphics.shaders;
 
 import lombok.extern.slf4j.Slf4j;
 import org.meowengine.content.Resource;
+import org.meowengine.exceptions.DisposeException;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,9 +57,8 @@ public class Shader extends Resource {
         return 0;
     }
 
-
     @Override
-    public void close() {
+    public void dispose() throws DisposeException {
 
     }
 }

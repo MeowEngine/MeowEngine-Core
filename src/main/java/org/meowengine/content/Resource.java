@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.Optional;
 
 @Slf4j
-public abstract class Resource implements Closeable {
+public abstract class Resource extends Disposable {
 
     /**
      * Loads resource as static resource from local directory
