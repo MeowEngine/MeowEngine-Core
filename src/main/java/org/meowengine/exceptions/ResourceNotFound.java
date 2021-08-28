@@ -8,8 +8,8 @@ public class ResourceNotFound extends IllegalStateException {
         super("Static resource " + file.getAbsolutePath() + " not found");
     }
 
-    public ResourceNotFound(String file, ClassLoader classLoader) {
-        super("Classpath resource " + file + " not found in " + classLoader.getName() + " [" + classLoader.toString() + "]");
+    public ResourceNotFound(String file) {
+        super("Classpath resource " + file + " not found in classpath");
     }
 
 }

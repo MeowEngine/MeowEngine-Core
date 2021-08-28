@@ -1,60 +1,65 @@
 package org.meowengine.graphics.shaders;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.lwjgl.opengl.GL33;
 import org.meowengine.content.Resource;
 import org.meowengine.exceptions.DisposeException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Optional;
+import java.util.Scanner;
 
 @Slf4j
 public class Shader extends Resource {
 
+    private int id;
 
-    public Shader(File file) {
+    @SneakyThrows
+    public Shader(File file, ShaderType shaderType) {
         super(file);
+        id = GL33.glCreateShader(shaderType.getTypeId());
 
+        var sourceStream = new FileInputStream(file);
+        Scanner scanner = new Scanner(sourceStream).useDelimiter("\\A");
+        String source = scanner.hasNext() ? scanner.next() : "";
+
+        shaderCompile(source);
     }
 
-    public Shader(String file, ClassLoader classLoader) {
-        super(file, classLoader);
+    public Shader(String file, ShaderType shaderType) {
+        super(file);
+        id = GL33.glCreateShader(shaderType.getTypeId());
 
+        var sourceStream = getClass().getClassLoader().getResourceAsStream(file);
+        //noinspection ConstantConditions
+        Scanner scanner = new Scanner(sourceStream).useDelimiter("\\A");
+        String source = scanner.hasNext() ? scanner.next() : "";
 
+        shaderCompile(source);
     }
 
-    //FIXME
-    //private final int id;
-    /*
-    public Shader(ContentManager contentManager, String location, ShaderType shaderType) {
-        super(contentManager, location);
-        String source;
 
-        var sourceStream = contentManager.getResourceAsStream(location);
-        if (sourceStream.isPresent()) {
-            Scanner scanner = new Scanner(sourceStream.get()).useDelimiter("\\A");
-            source = scanner.hasNext() ? scanner.next() : "";
+    private void shaderCompile(String source) {
+        GL33.glShaderSource(id,source);
+        GL33.glCompileShader(id);
+        int err = GL33.glGetShaderi(id, GL33.GL_COMPILE_STATUS);
+        if (err != 1) {
+            log.error("Failed to compile shader {}", GL33.glGetShaderInfoLog(id));
         } else {
-            log.error("Failed to load shader in " + location);
-            log.error("File not found");
-            throw new RuntimeException("File not found");
+            if (log.isTraceEnabled())
+                log.trace("Shader compile performed");
         }
+    }
 
-        id = glCreateShader(shaderType.getTypeId());
-        Disposer.addShader(id);
-        glShaderSource(id, source);
-        glCompileShader(id);
-        int status = glGetShaderi(id, GL_COMPILE_STATUS);
-        if (status != 1) {
-            log.error("Failed to compile shader");
-            log.error(glGetShaderInfoLog(id));
-        } else {
-            log.debug("Successful shader compiling [id = {}]", id);
-        }
-    }*/
+    int getId() {
+        return id;
+    }
 
-    final int getId() {
-        //return id;
-        return 0;
+    boolean isCompiled() {
+        return GL33.glGetShaderi(id, GL33.GL_COMPILE_STATUS) == 1;
     }
 
     @Override

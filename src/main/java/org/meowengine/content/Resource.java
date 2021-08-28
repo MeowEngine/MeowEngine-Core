@@ -13,8 +13,7 @@ public abstract class Resource extends Disposable {
 
     /**
      * Loads resource as static resource from local directory
-     * @param file
-     * @see Resource#Resource(String, ClassLoader) for loading from classpath
+     * @param file File
      */
     protected Resource(File file) {
         if (!file.exists()) {
@@ -23,28 +22,13 @@ public abstract class Resource extends Disposable {
     }
 
     /**
-     * Loads resource as static resource from local directory
-     * @param file filename
-     * @see Resource#Resource(String, ClassLoader) for loading from classpath
+     * Loads resource as static resource from classpath
+     * @param file filepath
      */
     protected Resource(String file) {
-        File res = new File(file);
-        if (!res.exists()) {
-            throw new ResourceNotFound(res);
-        }
+         if (getClass().getClassLoader().getResourceAsStream(file) == null) {
+             throw new ResourceNotFound(file);
+         }
     }
-
-    /**
-     * Loads resource from classpath
-     * @param file filename in classpath
-     * @param classLoader classpath with resource
-     */
-    protected Resource(String file, ClassLoader classLoader) {
-        var opt = Optional.ofNullable(classLoader.getResourceAsStream(file));
-        if (opt.isEmpty()) {
-            throw new ResourceNotFound(file, classLoader);
-        }
-    }
-
     
 }

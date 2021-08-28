@@ -120,7 +120,7 @@ public abstract class Application {
 
         glfwSwapInterval(1);
 
-        glfwShowWindow(window.getWindowId());
+        window.toggleWindowVisibility();
         GL.createCapabilities();
         glViewport(0, 0, 1280, 720);
 

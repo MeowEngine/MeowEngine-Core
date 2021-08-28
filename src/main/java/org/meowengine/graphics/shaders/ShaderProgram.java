@@ -22,10 +22,10 @@ public class ShaderProgram {
         glLinkProgram(id);
         int status = glGetProgrami(id, GL_LINK_STATUS);
         if (status != 1) {
-            log.error("Unsuccessful shader program link");
-            log.error(glGetProgramInfoLog(id));
+            log.error("Unsuccessful shader program link \n{}", glGetProgramInfoLog(id));
         } else {
-            log.debug("Successful shader program link [id = {}]", id);
+            if (log.isTraceEnabled())
+                log.trace("ShaderProgram link performed");
         }
 
         return this;
