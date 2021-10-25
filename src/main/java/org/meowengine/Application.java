@@ -3,21 +3,18 @@ package org.meowengine;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.lwjgl.Version;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
 import org.lwjgl.system.MemoryStack;
 import org.meowengine.graphics.Node;
 import org.meowengine.graphics.gui.GuiDrawer;
+import org.meowengine.system.GLFW;
+import org.meowengine.system.Window;
+import org.meowengine.system.WindowingSystem;
 
 import java.nio.IntBuffer;
-import java.util.Map;
 
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
-import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.GL_MIRRORED_REPEAT;
 import static org.lwjgl.system.MemoryStack.stackPush;
@@ -29,6 +26,9 @@ public abstract class Application {
     protected Camera camera;
     protected GuiDrawer gui;
     protected Callback debugProc;
+
+
+    protected WindowingSystem windowingSystem;
 
     protected ApplicationSettings applicationSettings;
 
@@ -56,71 +56,34 @@ public abstract class Application {
             debugProc.free();
         }
 
-        glfwFreeCallbacks(window.getWindowId());
-        glfwDestroyWindow(window.getWindowId());
-        glfwTerminate();
-
-        try {
-            //noinspection ConstantConditions
-            glfwSetErrorCallback(null).free();
-        } catch (NullPointerException exception) {
-            log.info("Maybe not set glfwErrorCallback");
-            exception.printStackTrace();
-        }
-
+        windowingSystem.terminate();
 
         Disposer.dispose();
         log.info("Exciting...");
     }
 
     protected void init() {
-        GLFWErrorCallback.createPrint(System.out).set();
-        if (!glfwInit()) {
-            throw new RuntimeException("Failed to initialize glfw\n");
-        }
-        log.info("Hello glfw " + glfwGetVersionString());
-
-        // glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        windowingSystem = GLFW.getInstance();
 
 
-        window = Window.createGLFWWindow(applicationSettings);
 
+        log.debug("Initializing window");
+        window = windowingSystem.createWindow(applicationSettings);
+
+        log.debug("Initializing gui drawer");
+        gui = new GuiDrawer(window);
 
         log.info("Successfully created new window");
 
-        try (MemoryStack stack = stackPush()) {
-            IntBuffer pWidth = stack.mallocInt(1); // int*
-            IntBuffer pHeight = stack.mallocInt(1); // int*
+        // FIXME: 10/5/2021 Its will be funny but u need to think about it
+        windowingSystem.makeWindowCurrent(window);
+        //glfwSetWindowSizeCallback(window.getWindowId(), this::CallbackWindowResize);
+        //glfwSetWindowCloseCallback(window.getWindowId(), this::CallbackWindowCloseSignal);
 
-            // Get the window size passed to glfwCreateWindow
-            glfwGetWindowSize(window.getWindowId(), pWidth, pHeight);
+        // FIXME: 10/5/2021 Its will be funny but u need to think about it
+        //glfwSwapInterval(1);
 
-            // Get the resolution of the primary monitor
-            GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-
-            // Center the window
-            assert vidmode != null;
-            glfwSetWindowPos(
-                    window.getWindowId(),
-                    (vidmode.width() - pWidth.get(0)) / 2,
-                    (vidmode.height() - pHeight.get(0)) / 2
-            );
-        }
-
-
-        glfwMakeContextCurrent(window.getWindowId());
-        glfwSetWindowSizeCallback(window.getWindowId(), this::CallbackWindowResize);
-        glfwSetWindowCloseCallback(window.getWindowId(), this::CallbackWindowCloseSignal);
-
-        glfwSwapInterval(1);
-
-        window.toggleWindowVisibility();
+        windowingSystem.toggleWindowVisibility(window);
         GL.createCapabilities();
         glViewport(0, 0, 1280, 720);
 
@@ -148,14 +111,13 @@ public abstract class Application {
         glEnable(GL_DEPTH_TEST);
         long time = System.nanoTime();
 
-        while (!glfwWindowShouldClose(window.getWindowId())) {
+        while (windowingSystem.isWindowShouldClosed(window)) {
 
             update(System.nanoTime() - time);
             SimpleUpdate(System.nanoTime() - time);
             draw(System.nanoTime() - time);
             SimpleDraw(System.nanoTime() - time);
             time = System.nanoTime();
-
 
         }
         log.info("Exiting from main loop");
@@ -164,11 +126,14 @@ public abstract class Application {
 
     protected void draw(long spendTime) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
     }
 
     protected void update(long spendTime) {
-        glfwSwapBuffers(window.getWindowId());
-        glfwPollEvents();
+        // FIXME: 10/7/2021 Swap thing and others u now
+//        glfwSwapBuffers(window.getWindowId());
+//        glfwPollEvents();
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         int error = glGetError();
         if (error != GL_NO_ERROR) {
@@ -209,16 +174,10 @@ public abstract class Application {
     protected abstract boolean OnWindowCloseSignal();
 
     // Notice first param, it's long. GLFW return here not only one window resize
-    protected void CallbackWindowResize(long window, int width, int height) {
-        this.window.updateWindowSize(width, height);
-        OnWindowResize(width, height);
-    }
 
-    protected void CallbackWindowCloseSignal(long window) {
-        glfwSetWindowShouldClose(window, false);
-        if (OnWindowCloseSignal()) {
-            glfwSetWindowShouldClose(window, true);
-        }
+
+    protected void sendCloseSignal() {
+        glfwSetWindowShouldClose(window.getWindowId(), true);
     }
 
 

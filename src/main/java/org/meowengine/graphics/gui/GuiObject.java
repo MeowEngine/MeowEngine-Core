@@ -1,16 +1,20 @@
 package org.meowengine.graphics.gui;
 
-import org.joml.Vector4i;
-import org.meowengine.graphics.SceneObject;
+import org.meowengine.graphics.buffers.VertexArray;
+import org.meowengine.graphics.shaders.ShaderProgram;
 
-public abstract class GuiObject extends SceneObject {
+public abstract class GuiObject {
 
-    public Vector4i margin = new Vector4i(0);
-    public Vector4i padding = new Vector4i(0);
-    public int border = 0;
+    private VertexArray vao;
 
-//    public Material borderMaterial;
+    private ShaderProgram shader;
+
+    GuiObject() {
+        vao = new VertexArray();
+    }
 
 
-
+    public void draw() {
+        VertexArray.draw(vao);
+    }
 }

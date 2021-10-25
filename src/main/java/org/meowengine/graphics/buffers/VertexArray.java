@@ -16,8 +16,9 @@ public class VertexArray {
 
     private static Map<Class<? extends Number>, Integer> type_map;
 
-    static
-    {
+    private final DrawMode drawMode;
+
+    static {
         type_map = new HashMap<>();
         type_map.put(Integer.class, GL_INT);
         type_map.put(Float.class, GL_FLOAT);
@@ -26,11 +27,14 @@ public class VertexArray {
         type_map.put(Short.class, GL_SHORT);
     }
 
-
-
-    public VertexArray()
-    {
+    public VertexArray() {
         this.id = glGenVertexArrays();
+        this.drawMode = DrawMode.TRIANGLES;
+    }
+
+    public VertexArray(DrawMode drawMode) {
+        this.id = glGenVertexArrays();
+        this.drawMode = drawMode;
     }
 
     /**
@@ -39,8 +43,7 @@ public class VertexArray {
      * @param location in location for shader
      */
     public void setVertexAttrib(VertexBuffer bufferToUse,
-                                int location)
-    {
+                                int location) {
         GL33C.glBindVertexArray(id);
         GL33C.glBindBuffer(GL33C.GL_ARRAY_BUFFER, bufferToUse.getId());
 
@@ -63,8 +66,28 @@ public class VertexArray {
     }
 
     public static void draw(VertexArray vao) {
-        //ShaderPack.Shader2d.foregroundObject.use();
-        VertexArray.use(vao);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(vao.getId());
+// fixme        glDrawElements(GL_TRIANGLES, 4, GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+    }
+
+    public enum DrawMode {
+
+        TRIANGLES {
+            @Override
+            public int getDrawMode() {
+                return GL_TRIANGLES;
+            }
+        },
+
+        LINES {
+            @Override
+            public int getDrawMode() {
+                return GL_LINES;
+            }
+        };
+
+
+        public abstract int getDrawMode();
     }
 }

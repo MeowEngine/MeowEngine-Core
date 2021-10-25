@@ -10,7 +10,7 @@ import java.util.Properties;
 @Slf4j
 public class EngineProperties {
 
-    private static Map<String, String> storedProperties;
+    private static final Map<String, String> storedProperties;
 
     static {
         storedProperties = new HashMap<>();
